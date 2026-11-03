@@ -1,0 +1,10 @@
+{
+  "name": "Multiplication Speed Game",
+  "short_name": "MultiplyGame",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "description": "A fast, fun timed multiplication practice game.",
+  "icons": []
+}
