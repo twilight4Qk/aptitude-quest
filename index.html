@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aptitude Quest</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--text:#1d2433;--muted:#667085;--accent:#4f46e5;--ok:#16a34a;--bad:#dc2626;--line:#d9deea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10131c;--card:#1a1f2e;--text:#eef1f8;--muted:#9aa4ba;--accent:#8b85ff;--ok:#4ade80;--bad:#f87171;--line:#2c3448;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10131c;--card:#1a1f2e;--text:#eef1f8;--muted:#9aa4ba;--accent:#8b85ff;--ok:#4ade80;--bad:#f87171;--line:#2c3448;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;width:100%;max-width:560px;align-self:flex-start;margin-top:24px}
+h1{margin:0 0 8px;font-size:28px}
+p{color:var(--muted);line-height:1.5}
+.top{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;margin-bottom:12px}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-bottom:20px}
+.bar div{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.q{font-size:20px;font-weight:600;margin-bottom:16px}
+button{font:inherit;cursor:pointer}
+.opt{display:block;width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text)}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 15%,transparent)}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-weight:600;margin-top:8px}
+.exp{margin-top:12px;padding:12px;border-radius:10px;background:var(--bg);font-size:15px}
+.big{font-size:48px;font-weight:700;color:var(--accent);margin:8px 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+var QUESTIONS=[
+{q:"What is 20% of 150?",o:["20","30","25","35"],a:1,e:"20% = 20/100, so 150 × 0.20 = 30."},
+{q:"An item is bought for 400 and sold for 500. What is the profit %?",o:["20%","25%","30%","15%"],a:1,e:"Profit = 100. Profit% = 100/400 × 100 = 25%."},
+{q:"What is the average of 10, 20, 30, 40 and 50?",o:["25","35","30","40"],a:2,e:"Sum = 150. Average = 150 ÷ 5 = 30."},
+{q:"A train runs at 60 km/h for 3 hours. What distance does it cover?",o:["120 km","160 km","180 km","200 km"],a:2,e:"Distance = Speed × Time = 60 × 3 = 180 km."},
+{q:"A can finish a work in 10 days and B in 15 days. Together, how many days?",o:["5","6","8","12"],a:1,e:"Per day: 1/10 + 1/15 = 1/6. So 6 days."},
+{q:"What is the simple interest on 1000 at 5% per year for 2 years?",o:["50","100","150","200"],a:1,e:"SI = P × R × T / 100 = 1000 × 5 × 2 / 100 = 100."},
+{q:"Two numbers are in ratio 2:3 and their sum is 50. What is the larger number?",o:["20","25","30","35"],a:2,e:"Total parts = 5. One part = 10. Larger = 3 × 10 = 30."},
+{q:"Convert 72 km/h into m/s.",o:["10","15","20","25"],a:2,e:"Multiply km/h by 5/18: 72 × 5/18 = 20 m/s."},
+{q:"What is 15% of 200 plus 10% of 300?",o:["50","60","70","80"],a:1,e:"15% of 200 = 30 and 10% of 300 = 30. Total = 60."},
+{q:"Find the next number: 2, 6, 12, 20, ?",o:["28","30","32","36"],a:1,e:"Differences are 4, 6, 8, so the next difference is 10. 20 + 10 = 30."}
+];
+var app=document.getElementById("app"),i=0,score=0,done=false;
+function getBest(){try{return +localStorage.getItem("aq_best")||0}catch(e){return 0}}
+function setBest(v){try{localStorage.setItem("aq_best",v)}catch(e){}}
+function home(){
+  app.innerHTML='<h1>🧠 Aptitude Quest</h1><p>Practice quantitative aptitude. 10 questions, 4 options each, with a quick trick after every answer.</p><p>Best score: <b>'+getBest()+' / '+QUESTIONS.length+'</b></p><button class="btn" id="start">Start Quiz</button>';
+  document.getElementById("start").onclick=function(){i=0;score=0;show()};
+}
+function show(){
+  var d=QUESTIONS[i];done=false;
+  var h='<div class="top"><span>Question '+(i+1)+' / '+QUESTIONS.length+'</span><span>Score: '+score+'</span></div>';
+  h+='<div class="bar"><div style="width:'+(i/QUESTIONS.length*100)+'%"></div></div><div class="q"></div><div id="opts"></div><div id="exp"></div>';
+  app.innerHTML=h;
+  app.querySelector(".q").textContent=d.q;
+  var box=document.getElementById("opts");
+  d.o.forEach(function(t,k){
+    var b=document.createElement("button");b.className="opt";b.textContent=t;
+    b.onclick=function(){pick(k)};box.appendChild(b);
+  });
+}
+function pick(k){
+  if(done)return;done=true;
+  var d=QUESTIONS[i],btns=document.querySelectorAll(".opt");
+  btns.forEach(function(b,n){b.disabled=true;if(n===d.a)b.classList.add("ok")});
+  if(k===d.a){score++}else{btns[k].classList.add("bad")}
+  var last=i===QUESTIONS.length-1;
+  document.getElementById("exp").innerHTML='<div class="exp">'+(k===d.a?"✅ Correct! ":"❌ Wrong. ")+d.e+'</div><button class="btn" id="next">'+(last?"See Result":"Next")+'</button>';
+  document.getElementById("next").onclick=function(){if(last){result()}else{i++;show()}};
+}
+function result(){
+  var best=getBest();if(score>best){best=score;setBest(score)}
+  var msg=score>=8?"Excellent! 🏆":score>=5?"Good job! Keep practicing 💪":"Keep learning, you will improve 📚";
+  app.innerHTML='<h1>Result</h1><div class="big">'+score+' / '+QUESTIONS.length+'</div><p>'+msg+'</p><p>Best score: <b>'+best+'</b></p><button class="btn" id="again">Play Again</button>';
+  document.getElementById("again").onclick=home;
+}
+home();
+</script>
+</body>
+</html>
